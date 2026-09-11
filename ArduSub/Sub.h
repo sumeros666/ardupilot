@@ -121,6 +121,7 @@ public:
     friend class ModeCircle;
     friend class ModeSurface;
     friend class ModeMotordetect;
+    friend class ModeSumeros;
 
     Sub(void);
 
@@ -630,6 +631,7 @@ private:
     ModeSurface mode_surface;
     ModeMotordetect mode_motordetect;
     ModeSurftrak mode_surftrak;
+    ModeSumeros mode_sumeros;
 
     // Auto
     AutoSubMode auto_mode;   // controls which auto controller is run

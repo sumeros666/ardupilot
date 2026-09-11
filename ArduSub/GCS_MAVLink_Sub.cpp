@@ -748,6 +748,37 @@ void GCS_MAVLINK_Sub::handle_message(const mavlink_message_t &msg)
         }
         break;
     }
+    case MAVLINK_MSG_ID_SET_ACTUATOR_CONTROL_TARGET: {
+		 // SUMEROS mode is allowed to consume commands.
+		if (sub.control_mode != Mode::Number::SUMEROS) {
+		    break;
+		}
+
+        if (msg.sysid != ModeSumeros::SOURCE_SYSID || 
+            msg.compid != ModeSumeros::SOURCE_COMPID) {
+            break;
+        }
+
+		mavlink_set_actuator_control_target_t packet;
+		mavlink_msg_set_actuator_control_target_decode(&msg, &packet);
+
+		if (packet.target_system != gcs().sysid_this_mav()) {
+		    break;
+		}
+
+        if (packet.target_component != MAV_COMP_ID_AUTOPILOT1 &&
+            packet.target_component != MAV_COMP_ID_ALL) {
+            break;
+        }
+
+		if (packet.group_mlx != 0) {
+		    break;
+		}
+
+		sub.mode_sumeros.set_actuator_target(packet);
+
+		break;
+	}
 
     default:
         GCS_MAVLINK::handle_message(msg);
@@ -848,6 +879,7 @@ uint8_t GCS_MAVLINK_Sub::send_available_mode(uint8_t index) const
         &sub.mode_circle,
         &sub.mode_surface,
         &sub.mode_motordetect,
+	&sub.mode_sumeros,
     };
 
     const uint8_t mode_count = ARRAY_SIZE(modes);

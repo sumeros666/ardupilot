@@ -54,6 +54,11 @@ public:
     // var_info for holding Parameter information
     static const struct AP_Param::GroupInfo        var_info[];
 
+    // SUMEROS Mode utilities
+    void set_direct_motor_control(bool enabled) { _direct_motor_control = enabled; }
+    void set_direct_motor_thrust(uint8_t motor_num, float thrust);
+    void clear_direct_motor_thrust();
+
 protected:
     // return current_limit as a number from 0 ~ 1 in the range throttle_min to throttle_max
     float               get_current_limit_max_throttle() override;
@@ -76,4 +81,8 @@ protected:
     // current limiting
     float _output_limited = 1.0f;
     float _batt_current_last = 0.0f;
+
+    // SUMEROS Mode utilities
+    bool _direct_motor_control = false;
+    float _direct_motor_thrust[AP_MOTORS_MAX_NUM_MOTORS] {};
 };

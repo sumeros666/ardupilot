@@ -14,6 +14,10 @@ void Sub::motors_output()
     // Without this the block set during ground-idle ramp would never clear
     // and the spool would stay in GROUND_IDLE.
     motors.set_spoolup_block(false);
+
+    motors.set_direct_motor_control(
+        control_mode == Mode::Number::SUMEROS
+    );
     
     // Motor detection mode controls the thrusters directly
     if (control_mode == Mode::Number::MOTOR_DETECT){

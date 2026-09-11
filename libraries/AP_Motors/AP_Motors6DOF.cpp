@@ -288,6 +288,18 @@ float AP_Motors6DOF::get_current_limit_max_throttle()
 // ToDo calculate headroom for rpy to be added for stabilization during full throttle/forward/lateral commands
 void AP_Motors6DOF::output_armed_stabilizing()
 {
+    if (_direct_motor_control) {
+        
+        limit.set_all(false);
+
+	for (uint8_t i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
+            if (motor_enabled[i]) {
+                // dont let the name _thrust_rpyt fool you, it's after the mixer. so we use this. 
+                _thrust_rpyt_out[i] = constrain_float(_direct_motor_thrust[i], -1.0f, 1.0f);
+            }
+	}
+    }
+
     if ((sub_frame_t)_active_frame_class == SUB_FRAME_VECTORED) {
         output_armed_stabilizing_vectored();
     } else if ((sub_frame_t)_active_frame_class == SUB_FRAME_VECTORED_6DOF) {
@@ -572,3 +584,21 @@ bool AP_Motors6DOF::set_reversed(int motor_number, bool reversed) {
     }
     return true;
 }
+
+void AP_Motors6DOF::set_direct_motor_thrust(uint8_t motor_num, float thrust)
+{
+    if (motor_num >= AP_MOTORS_MAX_NUM_MOTORS) {
+        return;
+    }
+
+    _direct_motor_thrust[motor_num] = constrain_float(thrust, -1.0f, 1.0f);
+}
+
+void AP_Motors6DOF::clear_direct_motor_thrust()
+{
+    for (uint8_t i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
+        _direct_motor_thrust[i] = 0.0f;
+    }
+}
+
+

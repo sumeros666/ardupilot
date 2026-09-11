@@ -50,8 +50,9 @@ public:
         POSHOLD =      16,  // automatic position hold with manual override, with automatic throttle
         MANUAL =       19,  // Pass-through input with no stabilization
         MOTOR_DETECT = 20,  // Automatically detect motors orientation
-        SURFTRAK =     21   // Track distance above seafloor (hold range)
-        // Mode number 30 reserved for "offboard" for external/lua control.
+        SURFTRAK =     21,   // Track distance above seafloor (hold range)
+        SUMEROS =      29   // Topside controller mode for experiments (OSL). 
+	// Mode number 30 reserved for "offboard" for external/lua control.
     };
 
     // constructor
@@ -435,3 +436,40 @@ protected:
     const char *name4() const override { return "DETE"; }
     Mode::Number number() const override { return Mode::Number::MOTOR_DETECT; }
 };
+
+class ModeSumeros : public Mode
+{
+	public:
+		using Mode::Mode;
+
+                static constexpr uint8_t SOURCE_SYSID = 42;
+                static constexpr uint8_t SOURCE_COMPID = MAV_COMP_ID_USER1;
+
+		bool init(bool ignore_checks) override;
+		void run() override;
+
+		bool set_actuator_target(const mavlink_set_actuator_control_target_t &packet);
+
+		bool requires_GPS() const override { return false ;}
+		bool requires_altitude() const override { return false ;}
+		bool allows_arming(bool from_gcs) const override {return true; }
+		bool is_autopilot() const override {return false; }
+
+	protected:
+		const char *name() const override { return "SUMEROS"; }
+		const char *name4() const override { return "SUMR"; }
+		Mode::Number number() const override { return Mode::Number::SUMEROS; }
+
+	private:
+		static constexpr uint8_t NUM_MOTORS = 8;
+		static constexpr uint32_t COMMAND_TIMEOUT_MS = 500;
+
+		float motor_command[NUM_MOTORS] {};
+		uint32_t last_command_ms = 0;
+
+		bool command_received = false;
+		bool fault_latched = false;
+
+		void trigger_failsafe();
+};
+
